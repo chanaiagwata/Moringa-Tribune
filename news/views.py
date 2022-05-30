@@ -1,17 +1,47 @@
 from django.shortcuts import render,redirect
-from django.http  import Http404
+from django.http import HttpResponse, Http404,HttpResponseRedirect
 import datetime as dt
-from .models import Article
+from .models import Article,NewsLetterRecipients
+from .forms import NewsLetterForm
+from .email import send_welcome_email  #-----import send_welcome_email and call it after validation
+from django.contrib.auth.decorators import login_required
+
+# -----------------------------------------------first we import NewsletterForm
+from .forms import NewArticleForm, NewsLetterForm
+
 
 # Create your views here.
 
 def news_today(request):
     date = dt.date.today()
     news = Article.todays_news()
+#----------------------------------------we use post because the form is submitting data to database  
+    if request.method == 'POST':
+        form = NewsLetterForm(request.POST)
+        if form.is_valid():   #----checks if form is validated
+            print('valid')
+            # After form validation, the name and email are saved in cleaned_data property-a dictionary 
+            name = form.cleaned_data['your_name']
+            email = form.cleaned_data['email']
+            
+            # recipient variable retrives name and email
+            recipient = NewsLetterRecipients(name = name,email =email)
+            # name and email saved
+            recipient.save()
+            send_welcome_email(name,email)  #-----import send_welcome_email and call it after validation
+            
+            
+            #redirect the user back to the news_today view function.
+            
+            HttpResponseRedirect('news_today')
+    else: #--------------------------------if the form is not valid, just create an empty form instance and pass it to template
+        form = NewsLetterForm()
     
     # FUNCTION TO CONVERT DATE OBJECT TO FIND EXACT DAY
 
-    return render(request, 'all-news/today-news.html', {"date": date,"news":news})
+    return render(request, 'all-news/today-news.html', {"date": date,"news":news, "letterForm":form})
+
+
 
 #View function to present news from past days
 def past_days_news(request,past_date):
@@ -34,20 +64,22 @@ def search_results(request):
         search_term = request.GET.get("article")
         searched_articles = Article.search_by_title(search_term)
         message = f"{search_term}"
-        
+   
         return render(request, 'all-news/search.html',{"message":message,"articles": searched_articles})
 
     else:
         message = "You haven't searched for any term"
         return render(request, 'all-news/search.html',{"message":message})
-
+    
+@login_required(login_url='/accounts/login/')
 def article(request,article_id):
     try:
         article = Article.objects.get(id = article_id)
     except DoesNotExist:
         raise Http404()
     return render(request,"all-news/article.html", {"article":article})
-        
+
+
     
     
 
