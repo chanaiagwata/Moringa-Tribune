@@ -1,9 +1,11 @@
-from django.conf.urls import url,include
+
 
 
 
 from django.contrib import admin
-from django.contrib.auth import views
+from django.urls import include, path
+from django.contrib.auth import views as auth_views
+
 
 # urlpatterns = [
 #     # Examples:
@@ -13,12 +15,12 @@ from django.contrib.auth import views
 #     url(r'^admin/', include(admin.site.urls)),
 # ]
 urlpatterns = [
-    url(r'^admin/', admin.site.urls),
-    url(r'',include('news.urls')),
-    url(r'^accounts/', include('registration.backends.simple.urls')),  #Django authentication***************************
-    url(r'^logout/$', views.logout, {"next_page": '/'}),
-   
-
-    
-    
+    path(r'admin/', admin.site.urls),
+    path(r'',include('news.urls')),
+    path('logout/',auth_views.logout_then_login, name ='logout'),
+    path(r'accounts/', include('django_registration.backends.one_step.urls')),
+    path('accounts/', include('django.contrib.auth.urls')),
+    path(r'^tinymce/', include('tinymce.urls')),
+      
 ]
+

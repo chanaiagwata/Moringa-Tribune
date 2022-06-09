@@ -2,7 +2,7 @@ from django.shortcuts import render,redirect
 from django.http import HttpResponse, Http404,HttpResponseRedirect
 import datetime as dt
 from .models import Article,NewsLetterRecipients
-from .forms import NewsLetterForm
+from .forms import NewsLetterForm,  NewArticleForm
 from .email import send_welcome_email  #-----import send_welcome_email and call it after validation
 from django.contrib.auth.decorators import login_required
 
@@ -15,7 +15,7 @@ from .forms import NewArticleForm, NewsLetterForm
 def news_today(request):
     date = dt.date.today()
     news = Article.todays_news()
-#----------------------------------------we use post because the form is submitting data to database  
+#----------------------------------------we use post method because the form is submitting data to database  
     if request.method == 'POST':
         form = NewsLetterForm(request.POST)
         if form.is_valid():   #----checks if form is validated
@@ -80,6 +80,16 @@ def article(request,article_id):
     return render(request,"all-news/article.html", {"article":article})
 
 
-    
-    
-
+@login_required(login_url='/accounts/login/')
+def new_article(request): #new function thst calls the form
+    current_user = request.user
+    if request.method == 'POST':
+        form = NewArticleForm(request.POST, request.FILES)  #the request.FILES arguement is passed in because we are going to be uploading an image file and we want to process it in our form 
+        if form.is_valid(): #validating the form
+            article=form.save(commit=False)  #if the form is valid, we save it using the save() method. #we pass in the commit=False to prevent it from saving to the database.
+            article.editor = current_user #here we are setting the editor attribute to the current user
+            article.save()
+        return redirect('NewsToday')
+    else:
+        form = NewArticleForm()
+    return render(request, 'new_article.html', {"form":form})
