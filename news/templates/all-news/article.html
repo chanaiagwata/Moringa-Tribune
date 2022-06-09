@@ -13,10 +13,10 @@
    </div>
 
    <div class="row">
-  
+     {% autoescape on %}   <!--used autoescape(a django template tag) because our post is saved as raw htm and this will allow us to ignore HTML tags and it is rendered as a text-->
      <p>{{article.post|safe}}</p>
-  
-   </div>
+     {% endautoescape %}
+     </div>
 
    <div class="row">
      <p>Posted {{article.pub_date|timesince}} by {{article.editor.first_name}}</p>

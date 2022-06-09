@@ -39,7 +39,7 @@ def news_today(request):
     
     # FUNCTION TO CONVERT DATE OBJECT TO FIND EXACT DAY
 
-    return render(request, 'all-news/today-news.html', {"date": date,"news":news, "letterForm":form})
+        return render(request, 'all-news/today-news.html', {"date": date,"news":news, "letterForm":form})
 
 
 
@@ -89,7 +89,7 @@ def new_article(request): #new function thst calls the form
             article=form.save(commit=False)  #if the form is valid, we save it using the save() method. #we pass in the commit=False to prevent it from saving to the database.
             article.editor = current_user #here we are setting the editor attribute to the current user
             article.save()
-        return redirect('NewsToday')
+        return redirect('newsToday')
     else:
         form = NewArticleForm()
     return render(request, 'new_article.html', {"form":form})
